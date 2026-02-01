@@ -1,0 +1,275 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  STUDENT
+  ADMIN
+  TEACHER
+}
+
+enum TypeNotification {
+  ANNOUNCEMENT
+  TASK
+  MESSAGE
+}
+
+enum ContentType {
+  VIDEO
+  PDF
+  DOCUMENT
+  PRESENTATION
+  OTHER
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  code      String   @unique
+  password  String
+  name      String
+  lastName  String
+  role      Role
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  isActive  Boolean  @default(true)
+  image     String?
+
+  enrollments     Enrollment[]
+  sentMessages    Message[]        @relation("MessageSender")
+  chatAsUser1     Chat[]           @relation("ChatUser1")
+  chatAsUser2     Chat[]           @relation("ChatUser2")
+  tasksCreated    Task[]           @relation("TaskCreator")
+  announcements   Announcement[]
+  notifications   Notification[]
+  taskSubmissions TaskSubmission[]
+  gradesGiven     Grade[]          @relation("GradeGiven")
+  gradesReceived  Grade[]          @relation("GradeReceiver")
+
+  @@index([code])
+  @@index([isActive])
+  @@index([email])
+  @@map("users")
+}
+
+model Course {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  code        String   @unique
+  startTime   DateTime
+  endTime     DateTime
+  period      String
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  image       String?
+
+  enrollments   Enrollment[]
+  chats         Chat[]
+  announcements Announcement[]
+  tasks         Task[]
+  courseModules CourseModule[]
+
+  @@index([code])
+  @@map("courses")
+}
+
+model CourseModule {
+  id       String @id @default(uuid())
+  title    String
+  courseId String
+
+  course           Course            @relation(fields: [courseId], references: [id])
+  courseSubmodules CourseSubmodule[]
+
+  @@index([courseId])
+  @@map("courseModules")
+}
+
+model CourseSubmodule {
+  id       String @id @default(uuid())
+  title    String
+  order    Int
+  moduleId String
+
+  module            CourseModule       @relation(fields: [moduleId], references: [id])
+  contentSubmodules ContentSubmodule[]
+
+  @@index([moduleId])
+  @@map("courseSubmodules")
+}
+
+model ContentSubmodule {
+  id          String      @id @default(uuid())
+  title       String
+  description String
+  type        ContentType
+  submoduleId String
+  fileSize    Float?
+  fileUrl     String?
+
+  submodule CourseSubmodule @relation(fields: [submoduleId], references: [id])
+
+  @@index([submoduleId])
+  @@map("contentSubmodules")
+}
+
+model Enrollment {
+  id         String   @id @default(uuid())
+  userId     String
+  courseId   String
+  role       Role
+  enrolledAt DateTime @default(now())
+  isClosed   Boolean  @default(false)
+
+  user   User   @relation(fields: [userId], references: [id])
+  course Course @relation(fields: [courseId], references: [id])
+
+  @@unique([userId, courseId])
+  @@index([userId])
+  @@index([courseId])
+  @@map("enrollments")
+}
+
+model Chat {
+  id              String   @id @default(uuid())
+  courseId        String
+  chatUserId1     String
+  chatUserId2     String
+  createdAt       DateTime @default(now())
+  isActiveToUser1 Boolean  @default(true)
+  isActiveToUser2 Boolean  @default(true)
+
+  course    Course    @relation(fields: [courseId], references: [id])
+  chatUser1 User      @relation("ChatUser1", fields: [chatUserId1], references: [id])
+  chatUser2 User      @relation("ChatUser2", fields: [chatUserId2], references: [id])
+  messages  Message[]
+
+  @@unique([courseId, chatUserId1, chatUserId2])
+  @@index([courseId])
+  @@index([chatUserId1])
+  @@index([chatUserId2])
+  @@map("chats")
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  chatId    String
+  senderId  String
+  content   String   @db.Text
+  sentAt    DateTime @default(now())
+  isDeleted Boolean  @default(false)
+
+  chat   Chat @relation(fields: [chatId], references: [id])
+  sender User @relation("MessageSender", fields: [senderId], references: [id])
+
+  @@index([chatId])
+  @@index([senderId])
+  @@index([sentAt])
+  @@map("messages")
+}
+
+model Announcement {
+  id        String   @id @default(uuid())
+  courseId  String
+  creatorId String
+  title     String
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  isActive  Boolean  @default(true)
+
+  creator User   @relation(fields: [creatorId], references: [id])
+  course  Course @relation(fields: [courseId], references: [id])
+
+  @@index([courseId])
+  @@index([creatorId])
+  @@index([createdAt])
+  @@map("announcements")
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  type      TypeNotification
+  title     String
+  content   String           @db.Text
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+model Task {
+  id          String   @id @default(uuid())
+  title       String
+  description String   @db.Text
+  limitDate   DateTime
+  courseId    String
+  creatorId   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  isActive    Boolean  @default(true)
+
+  creator         User             @relation("TaskCreator", fields: [creatorId], references: [id])
+  course          Course           @relation(fields: [courseId], references: [id])
+  taskSubmissions TaskSubmission[]
+
+  @@index([courseId])
+  @@index([creatorId])
+  @@index([createdAt])
+  @@map("tasks")
+}
+
+model TaskSubmission {
+  id          String   @id @default(uuid())
+  taskId      String
+  studentId   String
+  submittedAt DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  fileUrl     String?
+  grade       Grade?
+
+  task    Task @relation(fields: [taskId], references: [id])
+  student User @relation(fields: [studentId], references: [id])
+
+  @@unique([taskId, studentId])
+  @@map("taskSubmissions")
+}
+
+model Grade {
+  id           String   @id @default(uuid())
+  submissionId String   @unique
+  graderId     String
+  studentId    String
+  score        Float
+  feedback     String?  @db.Text
+  gradedAt     DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  submission TaskSubmission @relation(fields: [submissionId], references: [id])
+  grader     User           @relation("GradeGiven", fields: [graderId], references: [id])
+  student    User           @relation("GradeReceiver", fields: [studentId], references: [id])
+
+  @@index([submissionId])
+  @@index([graderId])
+  @@index([studentId])
+  @@map("grades")
+}

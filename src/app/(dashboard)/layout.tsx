@@ -1,12 +1,17 @@
+import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 
 interface Props {
     children: React.ReactNode;
 };
 
-export default function DashboardLayout({ children }: Props) {
+export default async function DashboardLayout({ children }: Props) {
 
-    redirect('/auth/login');
+    const session = await auth();
+
+    if (!session?.user) {
+        redirect('/auth/login');
+    }
 
     return (
         <div>
