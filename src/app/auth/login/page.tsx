@@ -29,7 +29,7 @@ export default function LoginPage() {
                         <p className="text-4xl font-bold">
                             {LoginEnums.LOG_IN}
                         </p>
-                        <p className="mt-2 text-sm text-center text-fontText-200/80">
+                        <p className="mt-2 text-sm text-center text-fontText-300">
                             {LoginEnums.LOG_IN_DESCRIPTION}
                         </p>
                     </div>

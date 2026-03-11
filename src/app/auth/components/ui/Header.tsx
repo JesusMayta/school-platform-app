@@ -16,7 +16,7 @@ export const Header = () => (
                     className="text-primary"
                 />
                 <span
-                    className="ml-3 text-lg text-fontText-200"
+                    className="ml-3 text-lg text-fontText-100"
                 >
                     {GeneralTextEnums.APP_NAME}
                 </span>

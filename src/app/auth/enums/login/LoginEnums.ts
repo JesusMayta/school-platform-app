@@ -11,4 +11,9 @@ export enum LoginEnums {
 
     CONTACT_SUPPORT = "tech-support@example.com",
     CONTACT_PHONE = "+56 9 9999 9999",
+
+    INCORRECT_CODE = 'Sú codigo parece ser incorrecto',
+    INCORRECT_PASSWORD = 'Sú contraseña parece ser incorrecta',
+    TITLE_LOGIN_ERROR = "Hubo un error",
+    CREDENTIALS_ERROR = "Sú codigo o contraseña son incorrectos. Intenta nuevamente.",
 };

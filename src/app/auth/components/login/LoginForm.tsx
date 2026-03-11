@@ -4,7 +4,10 @@ import {
     PiEyeClosed,
     PiEyeBold
 } from 'react-icons/pi';
-import { MdOutlineMailOutline, MdOutlineWhatsapp } from 'react-icons/md';
+import {
+    MdOutlineMailOutline,
+    MdOutlineWhatsapp
+} from 'react-icons/md';
 import {
     Button,
     Checkbox,
@@ -27,6 +30,7 @@ export const LoginForm = () => {
     const {
         showPassword,
 
+        handleSubmitLoginForm,
         setShowPassword
     } = useLoginFormController();
 
@@ -35,9 +39,9 @@ export const LoginForm = () => {
             <Formik
                 initialValues={{ code: '', password: '' }}
                 validationSchema={LoginFormSchemaValidation}
-                onSubmit={() => { }}
+                onSubmit={handleSubmitLoginForm}
             >
-                {({ submitCount, errors }) => (
+                {({ submitCount, errors, isSubmitting }) => (
                     <Form
                         className="flex flex-col gap-3"
                         autoComplete="off"
@@ -71,14 +75,16 @@ export const LoginForm = () => {
                                             onClick={() => setShowPassword(!showPassword)}
                                             className={clsx('cursor-pointer ', {
                                                 'text-button-error': submitCount > 0 && !!errors.password,
-                                                'text-fontText-200/40 hover:text-fontText-200/60': !submitCount || !errors.password
+                                                'text-fontText-200/40 hover:text-fontText-100/60': !submitCount || !errors.password
                                             })}
                                         >
-                                            {!showPassword ? <PiEyeBold size={25} /> : <PiEyeClosed size={25} />}
+                                            {!showPassword
+                                                ? <PiEyeBold size={25} />
+                                                : <PiEyeClosed size={25} />
+                                            }
                                         </button>
                                     }
                                     label={LoginEnums.PASSWORD_LABEL}
-                                    name="password"
                                     type={showPassword ? "text" : "password"}
                                     variant="bordered"
                                     isInvalid={submitCount > 0 && !!errors.password}
@@ -92,6 +98,7 @@ export const LoginForm = () => {
                                 name="remember"
                                 size="sm"
                                 color="primary"
+                                disabled={isSubmitting}
                             >
                                 <span className="text-xs">
                                     {LoginEnums.REMEMBER_ME}
@@ -109,8 +116,12 @@ export const LoginForm = () => {
                             </Link>
                         </div>
                         <Button
-                            className="w-full font-bold uppercase bg-primary text-background-300"
                             type="submit"
+                            variant="shadow"
+                            color="primary"
+                            isLoading={isSubmitting}
+                            disabled={isSubmitting}
+                            className="w-full font-bold uppercase text-background"
                         >
                             {LoginEnums.ENTER}
                         </Button>
@@ -118,7 +129,7 @@ export const LoginForm = () => {
                 )}
             </Formik>
 
-            <p className="text-sm font-medium text-center text-fontText-200">
+            <p className="text-sm font-medium text-center text-fontText-100">
                 {LoginEnums.NEED_HELP}
             </p>
 

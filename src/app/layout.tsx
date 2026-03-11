@@ -1,5 +1,8 @@
 import type { Metadata } from 'next';
-import { HeroProvider } from '@/providers';
+import {
+  AuthSessionProvider,
+  HeroProvider
+} from '@/providers';
 import { montserratFont } from '@/config';
 import { GeneralTextEnums } from '@/enums';
 import './globals.css';
@@ -26,9 +29,11 @@ export default function RootLayout({ children }: Props) {
       <body
         className={`${montserratFont.className} antialiased`}
       >
-        <HeroProvider>
-          {children}
-        </HeroProvider>
+        <AuthSessionProvider>
+          <HeroProvider>
+            {children}
+          </HeroProvider>
+        </AuthSessionProvider>
       </body>
     </html>
   );

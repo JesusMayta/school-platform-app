@@ -1,0 +1,4 @@
+export const TableStatusOptionsCourses = [
+    { id: 1, name: "Activo" },
+    { id: 2, name: "Cerrado" },
+];
